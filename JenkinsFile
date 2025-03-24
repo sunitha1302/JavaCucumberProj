@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    tools {
+        maven '3.8.6'  // Make sure Maven is configured in Jenkins
+        jdk '18.0.2'      // Ensure Java is installed in Jenkins
+    }
+
+    environment {
+        BROWSER = "${params.BROWSER}"  // Accept browser parameter for cross-browser tests
+    }
+
+    parameters {
+        string(name: 'BROWSER', defaultValue: 'chrome', description: 'Choose browser: chrome/firefox/edge')
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/sunitha1302/JavaCucumberProj.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'mvn clean install -DskipTests'  // Install dependencies without running tests
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'mvn test -Dbrowser=$BROWSER'  // Run tests based on parameterized browser
+            }
+        }
+
+        stage('Generate Reports') {
+            steps {
+                sh 'mvn verify'  // Generate Cucumber reports
+                publishHTML([allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'target/cucumber-reports',
+                    reportFiles: 'index.html',
+                    reportName: 'Cucumber Test Report'])
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying the application..."  // Add deployment steps here
+            }
+        }
+    }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'  // Publish JUnit test results
+        }
+        success {
+            echo "Build and tests successful!"
+        }
+        failure {
+            echo "Build or tests failed!"
+        }
+    }
+}
