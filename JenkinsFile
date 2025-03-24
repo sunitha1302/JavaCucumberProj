@@ -44,4 +44,5 @@ pipeline {
                     reportName: 'Cucumber Test Report'])
             }
         }
+    }
 }
