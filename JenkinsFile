@@ -44,23 +44,4 @@ pipeline {
                     reportName: 'Cucumber Test Report'])
             }
         }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploying the application..."  // Add deployment steps here
-            }
-        }
-    }
-
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'  // Publish JUnit test results
-        }
-        success {
-            echo "Build and tests successful!"
-        }
-        failure {
-            echo "Build or tests failed!"
-        }
-    }
 }
